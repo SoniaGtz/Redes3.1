@@ -1,3 +1,7 @@
+#
+# USO: python3 Analyze.py <filename>.json IP|SERVICE <ip|service>
+#
+
 from datetime import datetime
 import ipaddress
 import json
@@ -107,13 +111,24 @@ class Connection:
 
 
 # Handle CLI args and load the data dump
+option = ""
+parameter = ""
 if len(sys.argv) < 2:
     exit("Use {} <filename>.json".format(sys.argv[0]))
+elif len(sys.argv) == 3:
+    exit("Use {} <filename>.json IP|SERVICE <ip|service>".format(sys.argv[0]))
+elif len(sys.argv) == 4:
+    option = sys.argv[2]
+    parameter = sys.argv[3]
 filename = sys.argv[1]
+
 if not os.path.exists(filename):
     exit("File {} does not exist!".format(filename))
 with open(filename, 'r') as fh:
     data = json.loads(fh.read())
+
+if option != "IP" and option !="SERVICE" and option != "":
+    exit("{} is not a valid option".format(option))
 
 
 # Go through data and disect every flow saved inside the dump
@@ -125,9 +140,28 @@ for export in sorted(data):
     for flow in flows:
 
         con = Connection(flow, flow)
-        print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to"\
-            " {dest_host} ({dest})".format(
-            timestamp=timestamp, service=con.service.upper(),
-            src_host=con.hostnames.src, src=con.src,
-            dest_host=con.hostnames.dest, dest=con.dest,
-            size=con.human_size, duration=con.human_duration))
+        if option == "":
+            print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to"\
+                " {dest_host} ({dest})".format(
+                timestamp=timestamp, service=con.service.upper(),
+                src_host=con.hostnames.src, src=con.src,
+                dest_host=con.hostnames.dest, dest=con.dest,
+                size=con.human_size, duration=con.human_duration))
+
+        elif option == "IP":
+            if str(con.src) == parameter:
+                print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to" \
+                      " {dest_host} ({dest})".format(
+                    timestamp=timestamp, service=con.service.upper(),
+                    src_host=con.hostnames.src, src=con.src,
+                    dest_host=con.hostnames.dest, dest=con.dest,
+                    size=con.human_size, duration=con.human_duration))
+
+        elif option == "SERVICE":
+            if con.service.upper() == parameter:
+                print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to" \
+                      " {dest_host} ({dest})".format(
+                    timestamp=timestamp, service=con.service.upper(),
+                    src_host=con.hostnames.src, src=con.src,
+                    dest_host=con.hostnames.dest, dest=con.dest,
+                    size=con.human_size, duration=con.human_duration))
