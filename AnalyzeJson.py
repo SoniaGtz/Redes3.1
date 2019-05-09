@@ -31,6 +31,16 @@ def getIPs(flow):
         ipaddress.ip_address(flow['IPV6_DST_ADDR']))
 
 
+def humanSize(size):
+    if size < 1024:
+        return "%dB" % size
+    elif size / 1024. < 1024:
+        return "%.2fK" % (size / 1024.)
+    elif size / 1024. ** 2 < 1024:
+        return "%.2fM" % (size / 1024. ** 2)
+    else:
+        return "%.2fG" % (size / 1024. ** 3)
+
 class Connection:
     """Connection model for two flows.
     The direction of the data flow can be seen by looking at the size.
@@ -127,11 +137,13 @@ if not os.path.exists(filename):
 with open(filename, 'r') as fh:
     data = json.loads(fh.read())
 
-if option != "IP" and option !="SERVICE" and option != "":
+if option != "IP" and option !="SERVICE" and option != "" and option != "BAND":
     exit("{} is not a valid option".format(option))
 
 
 # Go through data and disect every flow saved inside the dump
+
+band = 0
 for export in sorted(data):
     timestamp = datetime.fromtimestamp(float(export)).strftime("%Y-%m-%d %H:%M.%S")
 
@@ -139,29 +151,20 @@ for export in sorted(data):
     pending = None  # Two flows normally appear together for duplex connection
     for flow in flows:
 
-        con = Connection(flow, flow)
-        if option == "":
-            print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to"\
-                " {dest_host} ({dest})".format(
-                timestamp=timestamp, service=con.service.upper(),
-                src_host=con.hostnames.src, src=con.src,
-                dest_host=con.hostnames.dest, dest=con.dest,
-                size=con.human_size, duration=con.human_duration))
-
-        elif option == "IP":
-            if str(con.src) == parameter:
-                print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to" \
-                      " {dest_host} ({dest})".format(
-                    timestamp=timestamp, service=con.service.upper(),
-                    src_host=con.hostnames.src, src=con.src,
-                    dest_host=con.hostnames.dest, dest=con.dest,
+        # if pending is not None:
+            con = Connection(flow, flow)
+            if (option == "") or (option == "IP" and str(con.src) == parameter) or (option == "SERVICE" and con.service.upper() == parameter):
+                print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src} to"\
+                    " {dest}".format(
+                    timestamp=timestamp, service=con.service.upper(), src=con.src, dest=con.dest,
                     size=con.human_size, duration=con.human_duration))
 
-        elif option == "SERVICE":
-            if con.service.upper() == parameter:
-                print("{timestamp}: {service:7} | {size:8} | {duration:9} | {src_host} ({src}) to" \
-                      " {dest_host} ({dest})".format(
-                    timestamp=timestamp, service=con.service.upper(),
-                    src_host=con.hostnames.src, src=con.src,
-                    dest_host=con.hostnames.dest, dest=con.dest,
-                    size=con.human_size, duration=con.human_duration))
+            elif option == "BAND" and (str(con.src) == parameter or str(con.dest) == parameter):
+                band = band + con.size
+
+
+        # flow = pending
+
+if option == "BAND":
+    bandwidth = float(band) / 600
+    print(humanSize(bandwidth) + "/s ")

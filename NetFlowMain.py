@@ -5,6 +5,8 @@ import socketserver
 import time
 import json
 import os.path
+from NetFlow import ExportPacket, TemplateNotRecognized
+
 
 
 logging.getLogger().setLevel(logging.INFO)
@@ -14,11 +16,6 @@ formatter = logging.Formatter('%(message)s')
 ch.setFormatter(formatter)
 logging.getLogger().addHandler(ch)
 
-try:
-    from netflow.collector_v9 import ExportPacket, TemplateNotRecognized
-except ImportError:
-    logging.warning("Netflow v9 not installed as package! Running from directory.")
-    from NetFlow import ExportPacket, TemplateNotRecognized
 
 parser = argparse.ArgumentParser(description="A sample netflow collector.")
 parser.add_argument("--host", type=str, default="",
@@ -77,32 +74,10 @@ class SoftflowUDPHandler(socketserver.BaseRequestHandler):
         logging.debug("Processed ExportPacket with {} flows.".format(export.header.count))
         logging.debug("Size of buffer: {}".format(len(self.buffered)))
 
-        # In case the export held some new templates
-        self.templates.update(export.templates)
-
-        remain_buffered = {}
-        processed = []
-        for timestamp, data in self.buffered.items():
-            try:
-                buffered_export = ExportPacket(data, self.templates)
-                processed.append(timestamp)
-            except TemplateNotRecognized:
-                remain_buffered[timestamp] = data
-                logging.debug("Template of buffered ExportPacket still not recognized")
-                continue
-            logging.debug("Processed buffered ExportPacket with {} flows.".format(buffered_export.header.count))
-            existing_data[timestamp] = [flow.data for flow in buffered_export.flows]
-
-        # Delete processed items from the buffer
-        for pro in processed:
-            del self.buffered[pro]
-
-        # Update the buffer
-        self.buffered.update(remain_buffered)
 
         # Append new flows
         existing_data[time.time()] = [flow.data for flow in export.flows]
-        print(existing_data)
+        # print(existing_data)
         with open(self.output_file, 'w') as fh:
             json.dump(existing_data, fh)
 
