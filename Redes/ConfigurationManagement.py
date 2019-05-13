@@ -9,8 +9,6 @@ import time
 from SNMPget import getSNMP
 import requests
 
-ips = Puller.conocer_red()
-ips.remove(["50.0.0.2", 0])
 inventario = {}
 directorio = "archivos/"
 mibSysdesc = "1.3.6.1.2.1.1.1.0"
@@ -24,6 +22,8 @@ mib = {"1.3.6.1.4.1.9.3.6.11.1.3",
 #1.3.6.1.4.1.9.3.6.3 chassis id
 
 def obtenerConfiguraciones():
+    ips = Puller.conocer_red()
+    ips.remove(["50.0.0.2", 0])
     while 1:
         for router, bandera in ips:
             try:
@@ -51,6 +51,8 @@ def obtenerConfiguraciones():
         time.sleep(20)
 
 def obtenerInventario():
+    ips = Puller.conocer_red()
+    ips.remove(["50.0.0.2", 0])
     print("Obteniendo inventario:")
     resultado = []
     for ip, b in ips:
@@ -70,6 +72,8 @@ def obtenerInventario():
     return resultado
 
 def obtenerInventarioWeb():
+    ips = Puller.conocer_red()
+    ips.remove(["50.0.0.2", 0])
     print("Obteniendo inventario:")
     resultado = []
     for ip, b in ips:
