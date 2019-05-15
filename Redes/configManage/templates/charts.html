@@ -13,5 +13,12 @@
     <form action='actualizarFlows' method='GET'>
 		<button type='submit'> Actualizar</button>
 	</form>
+	<h4>Flows</h4>
+	<form action='mostrarFlows' method='POST'>
+		<label for="ip_source"> De: </label>{% csrf_token %}
+		<input id="ip_source" type="text" name="ip_source" placeholder="IP origen">
+		<input type="submit" value="Mostrar">
+	</form>
+	{{ flows }}
 </div>
 {% endblock %}

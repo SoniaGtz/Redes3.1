@@ -7,7 +7,7 @@ class Flow(models.Model):
         Modelo que representa un flujo de NetFlow
     """
 
-    fecha = models.CharField(max_length=40,
+    fecha = models.DateTimeField(max_length=40,
                                  help_text="Fecha de registro")
 
     servicio = models.CharField(max_length=20,
@@ -26,4 +26,4 @@ class Flow(models.Model):
         """
         Cadena que representa a la instancia particular del modelo (p. ej. en el sitio de Administración)
         """
-        return self.fecha + ":" + self.servicio + ":" + str(self.size) + ":" + self.ip_origen + " to " + self.ip_destino
+        return str(self.fecha) + ":" + self.servicio + ":" + str(self.size) + ":" + self.ip_origen + " to " + self.ip_destino

@@ -23,3 +23,8 @@ def cargar_json(request):
         f.save()
 
     return render(request, 'charts.html', {})
+
+def mostrarFlows(request, *args, **kwargs):
+    ip_origen = request.POST['ip_source']
+    flows = Flow.objects.filter(ip_origen=ip_origen)
+    return render(request, 'charts.html', context={'flows': flows})
