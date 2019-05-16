@@ -26,6 +26,7 @@ from django.urls import include
 urlpatterns += [
     path('configManage/', include('configManage.urls')),
     path('accountManage/', include('accountManage.urls')),
+    path('performanceManage/', include('performanceManage.urls')),
 ]
 
 #Add URL maps to redirect the base URL to our application

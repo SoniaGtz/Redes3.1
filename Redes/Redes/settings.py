@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'configManage.apps.ConfigmanageConfig',
     'accountManage.apps.AccountmanageConfig',
+    'performanceManage.apps.PerformancemanageConfig',
 ]
 
 MIDDLEWARE = [
